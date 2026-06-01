@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Trưng Bày Hiện Vật – Bảo Tàng Quân Sự Việt Nam{% endblock %}
+
+{% block content %}
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <span class="hero-eyebrow-line"></span>
+      BẢO TÀNG LỊCH SỬ QUÂN SỰ VIỆT NAM
+      <span class="hero-eyebrow-line"></span>
+    </div>
+    <h1 class="hero-title font-display">KHO TÀNG<br>LỊCH SỬ</h1>
+    <p class="hero-subtitle">
+      Lưu giữ và tôn vinh những hiện vật, vũ khí, trang thiết bị quân sự
+      ghi dấu ấn lịch sử hào hùng của dân tộc Việt Nam.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-stat">
+        <span class="hero-stat-num font-display">{{ total_artifacts }}</span>
+        <span class="hero-stat-lbl font-ui">HIỆN VẬT</span>
+      </div>
+      <div class="hero-stat-divider"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-num font-display">{{ total_users }}</span>
+        <span class="hero-stat-lbl font-ui">THÀNH VIÊN</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ SEARCH & FILTER BAR ═══════════════════════════════════════════════ -->
+<section class="section section-alt" style="padding: 2rem 0;">
+  <div class="container">
+    <form method="GET" action="{{ url_for('main.index') }}" id="filterForm">
+
+      <!-- Search input with AJAX autocomplete -->
+      <div class="search-bar" style="position:relative; margin-bottom:1.25rem;">
+        <i class="fa fa-search search-icon"></i>
+        <input
+          type="text"
+          name="q"
+          id="searchInput"
+          class="search-input"
+          placeholder="Tìm kiếm hiện vật, xuất xứ, giai đoạn lịch sử..."
+          value="{{ search }}"
+          autocomplete="off"
+        />
+        <div class="autocomplete-list" id="autocompleteList"></div>
+      </div>
+
+      <!-- Filter row -->
+      <div class="filter-row">
+        <select name="category" class="filter-select">
+          <option value="">— Tất cả danh mục —</option>
+          {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+
+        <select name="period" class="filter-select">
+          <option value="">— Tất cả giai đoạn —</option>
+          {% for p in periods %}
+          <option value="{{ p }}" {% if period_f == p %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-filter"></i> LỌC
+        </button>
+        {% if search or category_id or period_f %}
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline">
+          <i class="fa fa-xmark"></i> XÓA BỘ LỌC
+        </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ══ CATEGORY QUICK-FILTER ════════════════════════════════════════════ -->
+<section class="section-dark" style="padding: 1.75rem 0;">
+  <div class="container">
+    <div class="cat-grid">
+      {% for cat in categories %}
+      <a href="{{ url_for('main.index', category=cat.id) }}"
+         class="cat-card {% if category_id == cat.id %}active{% endif %}">
+        <div class="cat-icon"><i class="fa {{ cat.icon }}"></i></div>
+        <div class="cat-name">{{ cat.name }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══ ARTIFACTS GRID ═════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+
+    <!-- Result count -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.75rem; flex-wrap:wrap; gap:0.5rem;">
+      <p class="font-ui" style="font-size:0.72rem; letter-spacing:3px; color:var(--khaki-500);">
+        {% if search or category_id or period_f %}
+          {{ pagination.total }} KẾT QUẢ ĐƯỢC TÌM THẤY
+        {% else %}
+          ĐANG HIỂN THỊ {{ pagination.total }} HIỆN VẬT
+        {% endif %}
+      </p>
+      {% if current_user.is_authenticated and current_user.is_admin() %}
+      <a href="{{ url_for('main.add_artifact') }}" class="btn btn-primary">
+        <i class="fa fa-plus"></i> THÊM HIỆN VẬT
+      </a>
+      {% endif %}
+    </div>
+
+    {% if artifacts %}
+    <div class="artifact-grid">
+      {% for art in artifacts %}
+      <article class="artifact-card">
+        <a href="{{ url_for('main.artifact_detail', id=art.id) }}" class="card-img-wrap">
+          {% if art.image_filename %}
+          <img
+            src="{{ url_for('static', filename='uploads/' ~ art.image_filename) }}"
+            alt="{{ art.name }}"
+            class="card-img"
+            loading="lazy"
+          />
+          {% else %}
+          <div class="card-img-placeholder">
+            <i class="fa fa-image"></i>
+          </div>
+          {% endif %}
+          {% if art.category %}
+          <span class="card-cat-badge">{{ art.category.name }}</span>
+          {% endif %}
+        </a>
+
+        <div class="card-body">
+          <h3 class="card-title">
+            <a href="{{ url_for('main.artifact_detail', id=art.id) }}">{{ art.name }}</a>
+          </h3>
+          {% if art.period %}
+          <p class="card-period"><i class="fa fa-clock-rotate-left"></i> {{ art.period }}</p>
+          {% endif %}
+          <p class="card-desc">{{ art.description | truncate(110) }}</p>
+
+          <div class="card-footer">
+            <a href="{{ url_for('main.artifact_detail', id=art.id) }}" class="btn btn-outline btn-sm">
+              XEM CHI TIẾT <i class="fa fa-arrow-right"></i>
+            </a>
+            <span class="card-views">
+              <i class="fa fa-eye"></i> {{ art.views }}
+            </span>
+          </div>
+        </div>
+
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <div class="card-admin-bar">
+          <a href="{{ url_for('main.edit_artifact', id=art.id) }}" class="admin-action edit">
+            <i class="fa fa-pen"></i>
+          </a>
+          <form method="POST" action="{{ url_for('main.delete_artifact', id=art.id) }}"
+                onsubmit="return confirm('Xác nhận xóa hiện vật này?')">
+            <button class="admin-action del" type="submit"><i class="fa fa-trash"></i></button>
+          </form>
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      <a href="{{ url_for('main.index', page=pagination.prev_num, q=search, category=category_id, period=period_f) }}"
+         class="page-link {% if not pagination.has_prev %}disabled{% endif %}">
+        <i class="fa fa-chevron-left"></i>
+      </a>
+
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+        <a href="{{ url_for('main.index', page=p, q=search, category=category_id, period=period_f) }}"
+           class="page-link {% if p == pagination.page %}current{% endif %}">{{ p }}</a>
+        {% else %}
+        <span class="page-link disabled">…</span>
+        {% endif %}
+      {% endfor %}
+
+      <a href="{{ url_for('main.index', page=pagination.next_num, q=search, category=category_id, period=period_f) }}"
+         class="page-link {% if not pagination.has_next %}disabled{% endif %}">
+        <i class="fa fa-chevron-right"></i>
+      </a>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="empty-state">
+      <i class="fa fa-box-open"></i>
+      <p class="empty-title">KHÔNG TÌM THẤY HIỆN VẬT</p>
+      <p class="empty-sub">Thử thay đổi từ khóa hoặc bộ lọc.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+// ── AJAX Autocomplete ───────────────────────────────────────────────────────
+const input  = document.getElementById('searchInput');
+const list   = document.getElementById('autocompleteList');
+let   timer  = null;
+
+input.addEventListener('input', () => {
+  clearTimeout(timer);
+  const q = input.value.trim();
+  if (q.length < 2) { list.innerHTML = ''; list.style.display = 'none'; return; }
+  timer = setTimeout(() => {
+    fetch(`/search-ajax?q=${encodeURIComponent(q)}`)
+      .then(r => r.json())
+      .then(data => {
+        list.innerHTML = '';
+        if (!data.length) { list.style.display = 'none'; return; }
+        data.forEach(item => {
+          const a = document.createElement('a');
+          a.href = item.url;
+          a.className = 'autocomplete-item';
+          a.innerHTML = `<span class="ac-name">${item.name}</span><span class="ac-period">${item.period}</span>`;
+          list.appendChild(a);
+        });
+        list.style.display = 'block';
+      });
+  }, 280);
+});
+
+document.addEventListener('click', e => {
+  if (!input.contains(e.target)) { list.style.display = 'none'; }
+});
+</script>
+{% endblock %}

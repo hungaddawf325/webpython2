@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Sửa Hiện Vật – {{ artifact.name }}{% endblock %}
+
+{% block content %}
+<div style="background:var(--khaki-800); border-bottom:3px solid var(--gold-500); padding:1.5rem 0;">
+  <div class="container">
+    <nav class="font-ui" style="font-size:.65rem; letter-spacing:2px; color:var(--khaki-300); margin-bottom:.6rem;">
+      <a href="{{ url_for('main.admin_dashboard') }}" style="color:var(--gold-500)">QUẢN TRỊ</a>
+      <span style="margin:0 .6rem; opacity:.4">›</span>
+      <a href="{{ url_for('main.artifact_detail', id=artifact.id) }}" style="color:var(--gold-500)">
+        {{ artifact.name | truncate(40) | upper }}
+      </a>
+      <span style="margin:0 .6rem; opacity:.4">›</span>
+      <span style="color:var(--cream-200)">CHỈNH SỬA</span>
+    </nav>
+    <h1 class="font-display" style="font-size:2.2rem; color:var(--cream-100); letter-spacing:4px;">
+      CHỈNH SỬA HIỆN VẬT
+    </h1>
+  </div>
+</div>
+
+<div style="max-width:820px; margin:3rem auto; padding:0 1.5rem;">
+  <form method="POST" action="{{ url_for('main.edit_artifact', id=artifact.id) }}"
+        enctype="multipart/form-data">
+
+    <div style="background:#fff; border:1px solid var(--border-subtle);
+                padding:2.5rem; box-shadow:var(--shadow-md); position:relative; overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                  background:linear-gradient(90deg,var(--gold-500),var(--red-500))"></div>
+
+      <!-- Tên -->
+      <div class="form-group">
+        <label class="form-label" for="name">
+          <i class="fa fa-tag"></i>&nbsp; TÊN HIỆN VẬT <span style="color:var(--red-500)">*</span>
+        </label>
+        <input type="text" id="name" name="name" class="form-input"
+               value="{{ artifact.name }}" required />
+      </div>
+
+      <!-- Danh mục + Giai đoạn -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="category_id">
+            <i class="fa fa-tags"></i>&nbsp; DANH MỤC
+          </label>
+          <select id="category_id" name="category_id" class="form-input">
+            <option value="">— Chọn danh mục —</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if artifact.category_id == cat.id %}selected{% endif %}>
+              {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="period">
+            <i class="fa fa-clock-rotate-left"></i>&nbsp; GIAI ĐOẠN LỊCH SỬ
+          </label>
+          <input type="text" id="period" name="period" class="form-input"
+                 value="{{ artifact.period or '' }}" />
+        </div>
+      </div>
+
+      <!-- Xuất xứ -->
+      <div class="form-group">
+        <label class="form-label" for="origin">
+          <i class="fa fa-map-pin"></i>&nbsp; XUẤT XỨ / NGUỒN GỐC
+        </label>
+        <input type="text" id="origin" name="origin" class="form-input"
+               value="{{ artifact.origin or '' }}" />
+      </div>
+
+      <!-- Mô tả -->
+      <div class="form-group">
+        <label class="form-label" for="description">
+          <i class="fa fa-align-left"></i>&nbsp; MÔ TẢ HIỆN VẬT <span style="color:var(--red-500)">*</span>
+        </label>
+        <textarea id="description" name="description" class="form-input form-textarea"
+                  rows="5" required>{{ artifact.description }}</textarea>
+      </div>
+
+      <!-- Ảnh hiện tại + Upload mới -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fa fa-image"></i>&nbsp; ẢNH HIỆN VẬT
+        </label>
+
+        {% if artifact.image_filename %}
+        <div style="margin-bottom:1rem;">
+          <p class="font-ui" style="font-size:.65rem; color:var(--khaki-500); letter-spacing:2px; margin-bottom:.5rem;">
+            ẢNH HIỆN TẠI:
+          </p>
+          <img src="{{ url_for('static', filename='uploads/' ~ artifact.image_filename) }}"
+               alt="{{ artifact.name }}"
+               style="max-height:180px; object-fit:cover; border:2px solid var(--gold-500);" />
+        </div>
+        {% endif %}
+
+        <div class="upload-zone" onclick="document.getElementById('imageInput').click()">
+          <input type="file" id="imageInput" name="image"
+                 accept=".jpg,.jpeg,.png,.gif,.webp" onchange="previewImage(this)">
+          <div class="upload-icon"><i class="fa fa-cloud-arrow-up"></i></div>
+          <p class="upload-text">
+            {% if artifact.image_filename %}Chọn ảnh mới để thay thế{% else %}Nhấn để chọn ảnh{% endif %}
+          </p>
+          <img id="imgPreview" class="img-preview" src="#" alt="Preview" />
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex; gap:.75rem; margin-top:2rem; flex-wrap:wrap;">
+        <button type="submit" class="btn btn-gold">
+          <i class="fa fa-floppy-disk"></i>&nbsp; LƯU THAY ĐỔI
+        </button>
+        <a href="{{ url_for('main.artifact_detail', id=artifact.id) }}" class="btn btn-outline">
+          <i class="fa fa-arrow-left"></i>&nbsp; QUAY LẠI
+        </a>
+        <form method="POST" action="{{ url_for('main.delete_artifact', id=artifact.id) }}"
+              style="margin-left:auto;"
+              onsubmit="return confirm('Xóa vĩnh viễn hiện vật này?')">
+          <button type="submit" class="btn btn-danger">
+            <i class="fa fa-trash"></i>&nbsp; XÓA HIỆN VẬT
+          </button>
+        </form>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewImage(input) {
+  const preview = document.getElementById('imgPreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

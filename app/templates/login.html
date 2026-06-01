@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Đăng Nhập – Bảo Tàng Quân Sự VN{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <div class="auth-star">★</div>
+      <h1 class="auth-title font-display">ĐĂNG NHẬP</h1>
+      <p class="auth-sub font-ui">TRUY CẬP HỆ THỐNG</p>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('main.login') }}" class="auth-form">
+      <div class="form-group">
+        <label class="form-label" for="username">
+          <i class="fa fa-user"></i> TÊN ĐĂNG NHẬP
+        </label>
+        <input
+          type="text"
+          id="username"
+          name="username"
+          class="form-input"
+          placeholder="Nhập tên đăng nhập..."
+          required
+          autofocus
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">
+          <i class="fa fa-lock"></i> MẬT KHẨU
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-input"
+          placeholder="Nhập mật khẩu..."
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        <i class="fa fa-right-to-bracket"></i> ĐĂNG NHẬP
+      </button>
+    </form>
+
+    <div class="form-divider"></div>
+    <p class="form-footer">
+      Chưa có tài khoản?&nbsp;
+      <a href="{{ url_for('main.register') }}">ĐĂNG KÝ NGAY</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

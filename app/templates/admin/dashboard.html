@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+{% block title %}Quản Trị – Bảo Tàng Quân Sự VN{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════════ -->
+  <aside class="admin-sidebar">
+    <div class="sidebar-section">QUẢN TRỊ HỆ THỐNG</div>
+
+    <a href="{{ url_for('main.admin_dashboard') }}"
+       class="sidebar-link {% if request.endpoint == 'main.admin_dashboard' %}active{% endif %}">
+      <i class="fa fa-gauge"></i> TỔNG QUAN
+    </a>
+    <a href="{{ url_for('main.add_artifact') }}"
+       class="sidebar-link {% if request.endpoint == 'main.add_artifact' %}active{% endif %}">
+      <i class="fa fa-plus"></i> THÊM HIỆN VẬT
+    </a>
+    <a href="{{ url_for('main.index') }}" class="sidebar-link">
+      <i class="fa fa-landmark"></i> XEM TRƯNG BÀY
+    </a>
+
+    <div class="sidebar-section">PHÂN QUYỀN</div>
+    <a href="#users" class="sidebar-link"><i class="fa fa-users"></i> NGƯỜI DÙNG</a>
+    <a href="#categories" class="sidebar-link"><i class="fa fa-tags"></i> DANH MỤC</a>
+    <a href="#artifacts" class="sidebar-link"><i class="fa fa-box-archive"></i> HIỆN VẬT</a>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══════════════════════════════════════════════════ -->
+  <div class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <h1 class="admin-page-title font-display">BẢNG ĐIỀU KHIỂN</h1>
+      <a href="{{ url_for('main.add_artifact') }}" class="btn btn-primary">
+        <i class="fa fa-plus"></i> THÊM HIỆN VẬT
+      </a>
+    </div>
+
+    <!-- ── Stats ──────────────────────────────────────────────────── -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="num">{{ total_artifacts }}</div>
+        <div class="lbl">HIỆN VẬT</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">{{ total_users }}</div>
+        <div class="lbl">NGƯỜI DÙNG</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">{{ total_comments }}</div>
+        <div class="lbl">BÌNH LUẬN</div>
+      </div>
+      <div class="stat-card">
+        <div class="num">{{ total_categories }}</div>
+        <div class="lbl">DANH MỤC</div>
+      </div>
+    </div>
+
+    <!-- ── Recent Artifacts ───────────────────────────────────────── -->
+    <div class="admin-section" id="artifacts">
+      <div class="admin-section-title">
+        <i class="fa fa-box-archive"></i>&nbsp; HIỆN VẬT GẦN ĐÂY
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>TÊN HIỆN VẬT</th>
+              <th>DANH MỤC</th>
+              <th>GIAI ĐOẠN</th>
+              <th>LƯỢT XEM</th>
+              <th>NGÀY THÊM</th>
+              <th>THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for art in recent_artifacts %}
+            <tr>
+              <td>{{ art.id }}</td>
+              <td>
+                <a href="{{ url_for('main.artifact_detail', id=art.id) }}"
+                   style="color:var(--gold-600); font-weight:600">
+                  {{ art.name | truncate(40) }}
+                </a>
+              </td>
+              <td>{{ art.category.name if art.category else '—' }}</td>
+              <td>{{ art.period | truncate(30) if art.period else '—' }}</td>
+              <td><i class="fa fa-eye" style="color:var(--gold-500)"></i> {{ art.views }}</td>
+              <td>{{ art.created_at.strftime('%d/%m/%Y') }}</td>
+              <td>
+                <div style="display:flex; gap:0.4rem;">
+                  <a href="{{ url_for('main.edit_artifact', id=art.id) }}"
+                     class="btn btn-outline btn-sm">
+                    <i class="fa fa-pen"></i>
+                  </a>
+                  <form method="POST"
+                        action="{{ url_for('main.delete_artifact', id=art.id) }}"
+                        onsubmit="return confirm('Xóa hiện vật này?')">
+                    <button type="submit" class="btn btn-danger btn-sm">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Manage Users ───────────────────────────────────────────── -->
+    <div class="admin-section" id="users">
+      <div class="admin-section-title">
+        <i class="fa fa-users"></i>&nbsp; QUẢN LÝ NGƯỜI DÙNG
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>TÊN ĐĂNG NHẬP</th>
+              <th>EMAIL</th>
+              <th>QUYỀN</th>
+              <th>NGÀY TẠO</th>
+              <th>ĐỔI QUYỀN</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>{{ u.id }}</td>
+              <td>
+                <strong>{{ u.username }}</strong>
+                {% if u.id == current_user.id %}
+                <span style="font-size:.65rem; color:var(--gold-500); margin-left:4px;">(BẠN)</span>
+                {% endif %}
+              </td>
+              <td>{{ u.email }}</td>
+              <td>
+                <span class="badge badge-{{ u.role }}">{{ u.role | upper }}</span>
+              </td>
+              <td>{{ u.created_at.strftime('%d/%m/%Y') }}</td>
+              <td>
+                {% if u.id != current_user.id %}
+                <form method="POST" action="{{ url_for('main.change_role', uid=u.id) }}"
+                      style="display:flex; gap:.4rem;">
+                  <select name="role" class="filter-select" style="padding:.35rem .7rem; font-size:.72rem">
+                    <option value="user"  {% if u.role == 'user'  %}selected{% endif %}>USER</option>
+                    <option value="admin" {% if u.role == 'admin' %}selected{% endif %}>ADMIN</option>
+                  </select>
+                  <button type="submit" class="btn btn-gold btn-sm">LƯU</button>
+                </form>
+                {% else %}
+                <span style="font-family:'Oswald',sans-serif; font-size:.72rem; color:var(--khaki-300)">
+                  — không thể tự đổi —
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Manage Categories ──────────────────────────────────────── -->
+    <div class="admin-section" id="categories">
+      <div class="admin-section-title">
+        <i class="fa fa-tags"></i>&nbsp; QUẢN LÝ DANH MỤC
+      </div>
+
+      <!-- Add category form -->
+      <form method="POST" action="{{ url_for('main.add_category') }}"
+            style="display:flex; gap:.75rem; flex-wrap:wrap; margin-bottom:1.25rem; align-items:flex-end;">
+        <div>
+          <label class="form-label">TÊN DANH MỤC</label>
+          <input type="text" name="name" class="form-input" style="width:220px"
+                 placeholder="VD: Vũ khí bộ binh" required />
+        </div>
+        <div>
+          <label class="form-label">MÔ TẢ</label>
+          <input type="text" name="description" class="form-input" style="width:280px"
+                 placeholder="Mô tả ngắn..." />
+        </div>
+        <div>
+          <label class="form-label">ICON (Font Awesome)</label>
+          <input type="text" name="icon" class="form-input" style="width:160px"
+                 placeholder="VD: fa-gun" value="fa-box-archive" />
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-plus"></i> THÊM
+        </button>
+      </form>
+
+      <!-- Category table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>TÊN DANH MỤC</th>
+              <th>ICON</th>
+              <th>MÔ TẢ</th>
+              <th>SỐ HIỆN VẬT</th>
+              <th>XÓA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat in categories %}
+            <tr>
+              <td>{{ cat.id }}</td>
+              <td><strong>{{ cat.name }}</strong></td>
+              <td><i class="fa {{ cat.icon }}" style="color:var(--gold-500)"></i> {{ cat.icon }}</td>
+              <td>{{ cat.description or '—' }}</td>
+              <td>{{ cat.artifacts | length }}</td>
+              <td>
+                {% if cat.artifacts | length == 0 %}
+                <form method="POST"
+                      action="{{ url_for('main.delete_category', cid=cat.id) }}"
+                      onsubmit="return confirm('Xóa danh mục này?')">
+                  <button type="submit" class="btn btn-danger btn-sm">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </form>
+                {% else %}
+                <span style="font-family:'Oswald',sans-serif; font-size:.72rem; color:var(--khaki-300)">
+                  Còn hiện vật
+                </span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /.admin-main -->
+</div><!-- /.admin-layout -->
+{% endblock %}

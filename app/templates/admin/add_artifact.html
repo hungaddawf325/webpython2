@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Thêm Hiện Vật – Quản Trị{% endblock %}
+
+{% block content %}
+<div style="background:var(--khaki-800); border-bottom:3px solid var(--gold-500); padding:1.5rem 0;">
+  <div class="container">
+    <nav class="font-ui" style="font-size:.65rem; letter-spacing:2px; color:var(--khaki-300); margin-bottom:.6rem;">
+      <a href="{{ url_for('main.admin_dashboard') }}" style="color:var(--gold-500)">QUẢN TRỊ</a>
+      <span style="margin:0 .6rem; opacity:.4">›</span>
+      <span style="color:var(--cream-200)">THÊM HIỆN VẬT</span>
+    </nav>
+    <h1 class="font-display" style="font-size:2.2rem; color:var(--cream-100); letter-spacing:4px;">
+      THÊM HIỆN VẬT MỚI
+    </h1>
+  </div>
+</div>
+
+<div style="max-width:820px; margin:3rem auto; padding:0 1.5rem;">
+  <form method="POST" action="{{ url_for('main.add_artifact') }}"
+        enctype="multipart/form-data">
+
+    <div style="background:#fff; border:1px solid var(--border-subtle);
+                padding:2.5rem; box-shadow:var(--shadow-md); position:relative; overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:4px;
+                  background:linear-gradient(90deg,var(--red-500),var(--gold-500))"></div>
+
+      <!-- Tên -->
+      <div class="form-group">
+        <label class="form-label" for="name">
+          <i class="fa fa-tag"></i>&nbsp; TÊN HIỆN VẬT <span style="color:var(--red-500)">*</span>
+        </label>
+        <input type="text" id="name" name="name" class="form-input"
+               placeholder="VD: Súng trường AK-47..." required autofocus />
+      </div>
+
+      <!-- Danh mục + Giai đoạn -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="category_id">
+            <i class="fa fa-tags"></i>&nbsp; DANH MỤC
+          </label>
+          <select id="category_id" name="category_id" class="form-input">
+            <option value="">— Chọn danh mục —</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="period">
+            <i class="fa fa-clock-rotate-left"></i>&nbsp; GIAI ĐOẠN LỊCH SỬ
+          </label>
+          <input type="text" id="period" name="period" class="form-input"
+                 placeholder="VD: Kháng chiến chống Mỹ (1955–1975)" />
+        </div>
+      </div>
+
+      <!-- Xuất xứ -->
+      <div class="form-group">
+        <label class="form-label" for="origin">
+          <i class="fa fa-map-pin"></i>&nbsp; XUẤT XỨ / NGUỒN GỐC
+        </label>
+        <input type="text" id="origin" name="origin" class="form-input"
+               placeholder="VD: Liên Xô – trang bị QĐNDVN..." />
+      </div>
+
+      <!-- Mô tả -->
+      <div class="form-group">
+        <label class="form-label" for="description">
+          <i class="fa fa-align-left"></i>&nbsp; MÔ TẢ HIỆN VẬT <span style="color:var(--red-500)">*</span>
+        </label>
+        <textarea id="description" name="description" class="form-input form-textarea"
+                  rows="5" placeholder="Mô tả chi tiết về hiện vật, lịch sử, ý nghĩa..."
+                  required></textarea>
+      </div>
+
+      <!-- Upload ảnh -->
+      <div class="form-group">
+        <label class="form-label">
+          <i class="fa fa-image"></i>&nbsp; ẢNH HIỆN VẬT
+        </label>
+        <div class="upload-zone" onclick="document.getElementById('imageInput').click()">
+          <input type="file" id="imageInput" name="image"
+                 accept=".jpg,.jpeg,.png,.gif,.webp" onchange="previewImage(this)">
+          <div class="upload-icon"><i class="fa fa-cloud-arrow-up"></i></div>
+          <p class="upload-text">Nhấn để chọn ảnh hoặc kéo thả vào đây</p>
+          <p class="upload-text" style="font-size:.7rem; margin-top:.3rem; opacity:.6">
+            PNG, JPG, GIF, WEBP — tối đa 16MB
+          </p>
+          <img id="imgPreview" class="img-preview" src="#" alt="Preview" />
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex; gap:.75rem; margin-top:2rem; flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary">
+          <i class="fa fa-floppy-disk"></i>&nbsp; LƯU HIỆN VẬT
+        </button>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-outline">
+          <i class="fa fa-arrow-left"></i>&nbsp; QUAY LẠI
+        </a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewImage(input) {
+  const preview = document.getElementById('imgPreview');
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+</script>
+{% endblock %}

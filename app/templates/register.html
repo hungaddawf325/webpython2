@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Đăng Ký – Bảo Tàng Quân Sự VN{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    <div class="auth-header">
+      <div class="auth-star">★</div>
+      <h1 class="auth-title font-display">ĐĂNG KÝ</h1>
+      <p class="auth-sub font-ui">TẠO TÀI KHOẢN MỚI</p>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.register') }}" class="auth-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="username">
+            <i class="fa fa-user"></i> TÊN ĐĂNG NHẬP
+          </label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            class="form-input"
+            placeholder="Tên người dùng..."
+            required
+            autofocus
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">
+            <i class="fa fa-envelope"></i> EMAIL
+          </label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="Địa chỉ email..."
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="password">
+            <i class="fa fa-lock"></i> MẬT KHẨU
+          </label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Ít nhất 6 ký tự..."
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirm">
+            <i class="fa fa-lock"></i> XÁC NHẬN MẬT KHẨU
+          </label>
+          <input
+            type="password"
+            id="confirm"
+            name="confirm"
+            class="form-input"
+            placeholder="Nhập lại mật khẩu..."
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">
+        <i class="fa fa-user-plus"></i> TẠO TÀI KHOẢN
+      </button>
+    </form>
+
+    <div class="form-divider"></div>
+    <p class="form-footer">
+      Đã có tài khoản?&nbsp;
+      <a href="{{ url_for('main.login') }}">ĐĂNG NHẬP</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

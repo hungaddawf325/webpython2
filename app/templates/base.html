@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}Bảo Tàng Lịch Sử Quân Sự Việt Nam{% endblock %}</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@300;400;500;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <div class="nav-container">
+
+    <!-- Brand -->
+    <a href="{{ url_for('main.index') }}" class="nav-brand">
+      <span class="brand-star">★</span>
+      <div class="brand-text">
+        <span class="brand-main">BẢO TÀNG QUÂN SỰ VN</span>
+        <span class="brand-sub">VIETNAM MILITARY HISTORY MUSEUM</span>
+      </div>
+    </a>
+
+    <!-- Links -->
+    <div class="nav-links" id="navLinks">
+      <a href="{{ url_for('main.index') }}"
+         class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+        <i class="fa fa-landmark"></i>&nbsp; TRƯNG BÀY
+      </a>
+      {% if current_user.is_authenticated and current_user.is_admin() %}
+      <div class="nav-divider"></div>
+      <a href="{{ url_for('main.admin_dashboard') }}"
+         class="nav-link {% if 'admin' in request.endpoint %}active{% endif %}">
+        <i class="fa fa-shield-halved"></i>&nbsp; QUẢN TRỊ
+      </a>
+      <a href="{{ url_for('main.add_artifact') }}" class="nav-link">
+        <i class="fa fa-plus"></i>&nbsp; THÊM HIỆN VẬT
+      </a>
+      {% endif %}
+
+      <div class="nav-divider"></div>
+
+      {% if current_user.is_authenticated %}
+      <div class="nav-user">
+        <span class="user-name">
+          {% if current_user.is_admin() %}<span class="star">★</span>{% endif %}
+          {{ current_user.username | upper }}
+        </span>
+        <form method="POST" action="{{ url_for('main.logout') }}" style="display:inline">
+          <button class="btn-nav btn-nav-out" type="submit">ĐĂNG XUẤT</button>
+        </form>
+      </div>
+      {% else %}
+      <a href="{{ url_for('main.login') }}" class="btn-nav btn-nav-gold">ĐĂNG NHẬP</a>
+      <a href="{{ url_for('main.register') }}" class="btn-nav btn-nav-out">ĐĂNG KÝ</a>
+      {% endif %}
+    </div>
+
+    <!-- Mobile toggle -->
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ FLASH MESSAGES ══════════════════════════════════════════════════ -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-container" id="flashContainer">
+  {% for cat, msg in messages %}
+  <div class="flash flash-{{ cat }}">
+    <span>{{ msg }}</span>
+    <button class="flash-close" onclick="this.parentElement.remove()">✕</button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- ══ CONTENT ══════════════════════════════════════════════════════════ -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ══ FOOTER ═══════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span style="font-size:1.6rem;color:var(--gold-500)">★</span>
+      <div>
+        <div class="footer-title">BẢO TÀNG QUÂN SỰ VN</div>
+        <div class="footer-sub">VIETNAM MILITARY HISTORY MUSEUM</div>
+      </div>
+    </div>
+    <div class="footer-info">
+      <div>28A Điện Biên Phủ, Ba Đình, Hà Nội</div>
+      <div>© {{ now.year if now else 2025 }} Bảo Tàng Lịch Sử Quân Sự Việt Nam</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ SCRIPTS ══════════════════════════════════════════════════════════ -->
+<script>
+  // Mobile nav toggle
+  document.getElementById('navToggle').addEventListener('click', () => {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+
+  // Auto-dismiss flash after 4 s
+  setTimeout(() => {
+    document.querySelectorAll('.flash').forEach(el => el.remove());
+  }, 4000);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}{{ artifact.name }} – Bảo Tàng Quân Sự VN{% endblock %}
+
+{% block content %}
+
+<!-- ══ BREADCRUMB ════════════════════════════════════════════════════════ -->
+<div style="background:var(--khaki-800); border-bottom:1px solid var(--border-subtle);">
+  <div class="container" style="padding-top:0.85rem; padding-bottom:0.85rem;">
+    <nav class="font-ui" style="font-size:0.65rem; letter-spacing:2px; color:var(--khaki-300);">
+      <a href="{{ url_for('main.index') }}" style="color:var(--gold-500);">TRƯNG BÀY</a>
+      <span style="margin:0 0.6rem; opacity:0.4;">›</span>
+      {% if artifact.category %}
+      <a href="{{ url_for('main.index', category=artifact.category_id) }}"
+         style="color:var(--gold-500);">{{ artifact.category.name | upper }}</a>
+      <span style="margin:0 0.6rem; opacity:0.4;">›</span>
+      {% endif %}
+      <span style="color:var(--cream-200);">{{ artifact.name | upper | truncate(50) }}</span>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ MAIN DETAIL ════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="detail-grid">
+
+      <!-- LEFT: Image -->
+      <div class="detail-media">
+        {% if artifact.image_filename %}
+        <div class="detail-img-wrap">
+          <img
+            src="{{ url_for('static', filename='uploads/' ~ artifact.image_filename) }}"
+            alt="{{ artifact.name }}"
+            class="detail-img"
+          />
+        </div>
+        {% else %}
+        <div class="detail-img-placeholder">
+          <i class="fa fa-image" style="font-size:4rem; color:var(--khaki-500)"></i>
+          <p class="font-ui" style="color:var(--khaki-500); letter-spacing:2px; margin-top:0.75rem; font-size:0.7rem;">CHƯA CÓ ẢNH</p>
+        </div>
+        {% endif %}
+
+        <!-- Meta strip -->
+        <div class="detail-meta-strip">
+          <div class="meta-item">
+            <i class="fa fa-eye"></i>
+            <span>{{ artifact.views }} lượt xem</span>
+          </div>
+          <div class="meta-item">
+            <i class="fa fa-calendar"></i>
+            <span>{{ artifact.created_at.strftime('%d/%m/%Y') }}</span>
+          </div>
+          <div class="meta-item">
+            <i class="fa fa-comment"></i>
+            <span>{{ comments | length }} bình luận</span>
+          </div>
+        </div>
+
+        <!-- Admin actions -->
+        {% if current_user.is_authenticated and current_user.is_admin() %}
+        <div class="detail-admin-actions">
+          <a href="{{ url_for('main.edit_artifact', id=artifact.id) }}"
+             class="btn btn-outline btn-sm">
+            <i class="fa fa-pen"></i> CHỈNH SỬA
+          </a>
+          <form method="POST" action="{{ url_for('main.delete_artifact', id=artifact.id) }}"
+                onsubmit="return confirm('Xóa hiện vật này vĩnh viễn?')">
+            <button type="submit" class="btn btn-danger btn-sm">
+              <i class="fa fa-trash"></i> XÓA
+            </button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- RIGHT: Info -->
+      <div class="detail-info">
+
+        {% if artifact.category %}
+        <span class="detail-category font-ui">
+          <i class="fa {{ artifact.category.icon }}"></i>
+          {{ artifact.category.name | upper }}
+        </span>
+        {% endif %}
+
+        <h1 class="detail-title font-display">{{ artifact.name }}</h1>
+
+        <div class="info-grid">
+          {% if artifact.period %}
+          <div class="info-item">
+            <span class="info-label font-ui">GIAI ĐOẠN LỊCH SỬ</span>
+            <span class="info-value">{{ artifact.period }}</span>
+          </div>
+          {% endif %}
+          {% if artifact.origin %}
+          <div class="info-item">
+            <span class="info-label font-ui">XUẤT XỨ / NGUỒN GỐC</span>
+            <span class="info-value">{{ artifact.origin }}</span>
+          </div>
+          {% endif %}
+          <div class="info-item">
+            <span class="info-label font-ui">NGƯỜI ĐĂNG</span>
+            <span class="info-value">{{ artifact.author.username }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label font-ui">CẬP NHẬT</span>
+            <span class="info-value">{{ artifact.updated_at.strftime('%d/%m/%Y %H:%M') }}</span>
+          </div>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <div class="detail-desc">
+          <p class="info-label font-ui" style="margin-bottom:0.75rem;">MÔ TẢ HIỆN VẬT</p>
+          <p>{{ artifact.description }}</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ RELATED ARTIFACTS ═════════════════════════════════════════════════ -->
+{% if related %}
+<section class="section section-alt">
+  <div class="container">
+    <h2 class="section-title font-display">HIỆN VẬT LIÊN QUAN</h2>
+    <div class="artifact-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px,1fr))">
+      {% for art in related %}
+      <article class="artifact-card">
+        <a href="{{ url_for('main.artifact_detail', id=art.id) }}" class="card-img-wrap">
+          {% if art.image_filename %}
+          <img src="{{ url_for('static', filename='uploads/' ~ art.image_filename) }}"
+               alt="{{ art.name }}" class="card-img" loading="lazy" />
+          {% else %}
+          <div class="card-img-placeholder"><i class="fa fa-image"></i></div>
+          {% endif %}
+        </a>
+        <div class="card-body">
+          <h3 class="card-title">
+            <a href="{{ url_for('main.artifact_detail', id=art.id) }}">{{ art.name }}</a>
+          </h3>
+          {% if art.period %}
+          <p class="card-period"><i class="fa fa-clock-rotate-left"></i> {{ art.period }}</p>
+          {% endif %}
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ COMMENTS ══════════════════════════════════════════════════════════ -->
+<section class="section">
+  <div class="container" style="max-width:860px;">
+    <h2 class="section-title font-display" style="margin-bottom:2rem;">
+      BÌNH LUẬN
+      <span style="font-size:1.1rem; color:var(--gold-500); margin-left:0.5rem;">({{ comments | length }})</span>
+    </h2>
+
+    <!-- Post comment form -->
+    {% if current_user.is_authenticated %}
+    <form method="POST" action="{{ url_for('main.artifact_detail', id=artifact.id) }}"
+          class="comment-form" style="margin-bottom:2.5rem;">
+      <div class="form-group">
+        <label class="form-label" for="content">
+          <i class="fa fa-comment-dots"></i> VIẾT BÌNH LUẬN
+        </label>
+        <textarea
+          id="content"
+          name="content"
+          class="form-input form-textarea"
+          placeholder="Chia sẻ suy nghĩ của bạn về hiện vật này..."
+          rows="3"
+          required
+        ></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fa fa-paper-plane"></i> GỬI BÌNH LUẬN
+      </button>
+    </form>
+    {% else %}
+    <div style="background:var(--cream-200); border:1px solid var(--border-subtle);
+                padding:1.25rem 1.5rem; margin-bottom:2rem; text-align:center;">
+      <p class="font-ui" style="font-size:0.8rem; letter-spacing:1.5px; color:var(--khaki-500);">
+        <a href="{{ url_for('main.login') }}" style="color:var(--red-500);">ĐĂNG NHẬP</a>
+        &nbsp;để viết bình luận
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- Comment list -->
+    {% if comments %}
+    <div class="comment-list">
+      {% for cmt in comments %}
+      <div class="comment-item">
+        <div class="comment-avatar font-display">
+          {{ cmt.commenter.username[0] | upper }}
+        </div>
+        <div class="comment-body">
+          <div class="comment-header">
+            <span class="comment-author font-ui">
+              {{ cmt.commenter.username }}
+              {% if cmt.commenter.is_admin() %}
+              <span class="badge badge-admin" style="margin-left:4px;">ADMIN</span>
+              {% endif %}
+            </span>
+            <span class="comment-date">
+              {{ cmt.created_at.strftime('%d/%m/%Y %H:%M') }}
+            </span>
+          </div>
+          <p class="comment-text">{{ cmt.content }}</p>
+        </div>
+        {% if current_user.is_authenticated and (current_user.id == cmt.user_id or current_user.is_admin()) %}
+        <form method="POST" action="{{ url_for('main.delete_comment', cid=cmt.id) }}"
+              style="align-self:flex-start;"
+              onsubmit="return confirm('Xóa bình luận này?')">
+          <button class="admin-action del" type="submit" style="font-size:0.7rem; padding:0.3rem 0.5rem;">
+            <i class="fa fa-trash"></i>
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:2.5rem 0;">
+      <i class="fa fa-comments"></i>
+      <p class="empty-title">CHƯA CÓ BÌNH LUẬN</p>
+      <p class="empty-sub">Hãy là người đầu tiên chia sẻ suy nghĩ!</p>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+{% endblock %}
