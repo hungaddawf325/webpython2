@@ -609,4 +609,4 @@ def chatbot_clear():
     data       = request.get_json(silent=True) or {}
     session_id = data.get('session_id', 'default')
     _gemini_histories.pop(session_id, None)
-    return jsonify({'status': 'cleared'})
+    return jsonify({'status': 'cleared'}) 
